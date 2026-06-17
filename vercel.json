@@ -1,14 +1,5 @@
 {
-  "builds": [
-    {
-      "src": "Dockerfile",
-      "use": "@vercel/docker"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ]
+  "buildCommand": "pip install -r requirements.txt",
+  "devCommand": "streamlit run app.py",
+  "installCommand": "pip install -r requirements.txt"
 }
