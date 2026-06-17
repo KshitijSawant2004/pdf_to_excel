@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF to Excel Converter</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f6fb;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-border: rgba(17, 24, 39, 0.08);
+      --text: #102033;
+      --muted: #5b6573;
+      --accent: #0f766e;
+      --accent-2: #155e75;
+      --warn: #b45309;
+      --error: #b91c1c;
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15, 118, 110, 0.14), transparent 35%),
+        radial-gradient(circle at top right, rgba(21, 94, 117, 0.14), transparent 32%),
+        linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 40px 0 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .hero-copy {
+      padding: 36px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(15, 118, 110, 0.08);
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 18px 0 12px;
+      font-size: clamp(2.2rem, 4vw, 4rem);
+      line-height: 0.98;
+      letter-spacing: -0.05em;
+    }
+
+    .lead {
+      max-width: 58ch;
+      margin: 0;
+      color: var(--muted);
+      font-size: 1.02rem;
+      line-height: 1.65;
+    }
+
+    .hero-metrics {
+      display: grid;
+      gap: 16px;
+      padding: 24px;
+      align-content: start;
+      background: linear-gradient(180deg, rgba(15, 118, 110, 0.11), rgba(255, 255, 255, 0.74));
+    }
+
+    .metric {
+      padding: 18px 18px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 1.12rem;
+      margin-bottom: 6px;
+    }
+
+    .metric span {
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 0.95rem;
+    }
+
+    .panel {
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .upload-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px dashed rgba(15, 118, 110, 0.45);
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .button,
+    .button-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 14px;
+      text-decoration: none;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+    }
+
+    .button {
+      color: white;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      box-shadow: 0 14px 30px rgba(15, 118, 110, 0.22);
+    }
+
+    .button-link {
+      color: white;
+      background: linear-gradient(135deg, #0f766e, #2563eb);
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.18);
+    }
+
+    .button:hover,
+    .button-link:hover {
+      transform: translateY(-1px);
+      opacity: 0.98;
+    }
+
+    .message,
+    .alert {
+      padding: 14px 16px;
+      border-radius: 16px;
+      margin-top: 14px;
+      line-height: 1.55;
+    }
+
+    .alert {
+      background: rgba(185, 28, 28, 0.08);
+      color: var(--error);
+      border: 1px solid rgba(185, 28, 28, 0.18);
+    }
+
+    .message {
+      background: rgba(15, 118, 110, 0.08);
+      border: 1px solid rgba(15, 118, 110, 0.14);
+      color: var(--text);
+    }
+
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1.18rem;
+      letter-spacing: -0.03em;
+    }
+
+    .subtle {
+      color: var(--muted);
+      margin-top: -6px;
+      margin-bottom: 14px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    details {
+      overflow: hidden;
+      border-radius: 20px;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 18px 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .details-body {
+      padding: 0 20px 20px;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .data-table th,
+    .data-table td {
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .data-table th {
+      background: rgba(15, 118, 110, 0.08);
+      font-weight: 700;
+    }
+
+    .list {
+      margin: 0;
+      padding-left: 20px;
+      color: var(--text);
+      line-height: 1.65;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 920px) {
+      .hero,
+      .upload-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-copy,
+      .hero-metrics,
+      .panel {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="card hero-copy">
+        <div class="eyebrow">Engineering PDF to Excel</div>
+        <h1>Upload a PDF and get a cleaned Excel workbook.</h1>
+        <p class="lead">
+          This version uses a plain HTML interface instead of Streamlit. It extracts tables with
+          pdfplumber, Camelot, and OCR fallback, then detects formula patterns and generates a downloadable XLSX file.
+        </p>
+      </div>
+      <div class="card hero-metrics">
+        <div class="metric">
+          <strong>PDF extraction</strong>
+          <span>Native tables are read first, then scanned pages fall back to OCR when needed.</span>
+        </div>
+        <div class="metric">
+          <strong>Formula detection</strong>
+          <span>Common engineering row patterns are converted into workbook formulas automatically.</span>
+        </div>
+        <div class="metric">
+          <strong>Excel export</strong>
+          <span>Results are formatted and returned as a downloadable .xlsx workbook.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card panel">
+      <form method="post" enctype="multipart/form-data">
+        <div class="upload-grid">
+          <div>
+            <label for="pdf_file">Choose PDF file</label>
+            <input id="pdf_file" name="pdf_file" type="file" accept="application/pdf,.pdf" required>
+          </div>
+          <button class="button" type="submit">Convert PDF</button>
+        </div>
+      </form>
+
+      {% if error %}
+        <div class="alert">{{ error }}</div>
+      {% endif %}
+
+      {% if messages %}
+        <div class="stack" style="margin-top: 20px;">
+          <div>
+            <h2 class="section-title">Processing notes</h2>
+            {% for message in messages %}
+              <div class="message">{{ message }}</div>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      {% if download_url %}
+        <div style="margin-top: 22px;">
+          <a class="button-link" href="{{ download_url }}">Download {{ output_name }}</a>
+        </div>
+      {% endif %}
+    </section>
+
+    {% if tables %}
+      <section class="stack" style="margin-top: 24px;">
+        <div class="card panel">
+          <h2 class="section-title">Extracted tables</h2>
+          <p class="subtle">Expand each table to inspect the parsed data before downloading the workbook.</p>
+
+          <div class="stack">
+            {% for table in tables %}
+              <details {% if loop.first %}open{% endif %}>
+                <summary>
+                  <span>{{ table.title }}</span>
+                  <span>Table {{ loop.index }}</span>
+                </summary>
+                <div class="details-body">
+                  {{ table.html | safe }}
+                </div>
+              </details>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="card panel">
+          <h2 class="section-title">Detected formulas</h2>
+          {% if formula_sections %}
+            <div class="stack">
+              {% for section in formula_sections %}
+                <details {% if loop.first %}open{% endif %}>
+                  <summary>
+                    <span>{{ section.title }}</span>
+                    <span>Rules {{ loop.index }}</span>
+                  </summary>
+                  <div class="details-body">
+                    <ul class="list">
+                      {% for description in section.descriptions %}
+                        <li>{{ description }}</li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                </details>
+              {% endfor %}
+            </div>
+          {% else %}
+            <p class="subtle">No reliable formula patterns were detected, so values were preserved as-is.</p>
+          {% endif %}
+        </div>
+      </section>
+    {% endif %}
+
+    <p class="footer-note">
+      If a PDF is scanned, make sure the Tesseract OCR executable is installed and available on PATH.
+    </p>
+  </div>
+</body>
+</html>

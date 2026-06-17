@@ -1,5 +1,15 @@
 {
-  "buildCommand": "pip install -r requirements.txt",
-  "devCommand": "streamlit run app.py",
-  "installCommand": "pip install -r requirements.txt"
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "api/index.py"
+    }
+  ]
 }
